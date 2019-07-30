@@ -1,0 +1,441 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# WeatherPy\n",
+    "----\n",
+    "\n",
+    "#### Note\n",
+    "* Instructions have been included for each segment. You do not have to follow them exactly, but they are included to help you think through the steps."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "- The weather becomes a lot warmer as you approach the equator which is designated at 0 degree lattitude.\n",
+    "- This time of the year the weather is warmer in the northern parts of the hemisphere.\n",
+    "- "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "# Dependencies and Setup\n",
+    "import matplotlib.pyplot as plt\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import requests\n",
+    "import time\n",
+    "import urllib\n",
+    "import datetime as dt\n",
+    "# Import API key\n",
+    "api_key=\"c68ce3784c7869960c8805a8aea60f7a\"\n",
+    "\n",
+    "# Incorporated citipy to determine city based on latitude and longitude\n",
+    "from citipy import citipy\n",
+    "\n",
+    "# Output File (CSV)\n",
+    "output_data_file = \"output_data/cities.csv\"\n",
+    "\n",
+    "# Range of latitudes and longitudes\n",
+    "lat_range = (-90, 90)\n",
+    "lng_range = (-180, 180)\n",
+    "\n",
+    "now = dt.datetime.today().strftime(\"%m/%d/%y\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Generate Cities List"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#api key\n",
+    "#api_key = \"c68ce3784c7869960c8805a8aea60f7a\"\n",
+    "#url = \"http://api.openweathermap.org/data/2.5/weather?\"\n",
+    "#units = \"imperial\" #Fahrenheit"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# List for holding lat_lngs and cities\n",
+    "lat_lngs = []\n",
+    "cities = []\n",
+    "\n",
+    "# Creating a set of random lat and lng combinations\n",
+    "lats = np.random.uniform(low=-90.000, high=90.000, size=1500)\n",
+    "lngs = np.random.uniform(low=-180.000, high=180.000, size=1500)\n",
+    "lat_lngs = zip(lats, lngs)\n",
+    "\n",
+    "# Identifying nearest city for each lat, lng combination\n",
+    "for lat_lng in lat_lngs:\n",
+    "    city = citipy.nearest_city(lat_lng[0], lat_lng[1]).city_name\n",
+    "    \n",
+    "    # If the city is unique, then add it to a our cities list\n",
+    "    if city not in cities:\n",
+    "        cities.append(city)\n",
+    "\n",
+    "# Print the city count to confirm sufficient count\n",
+    "len(cities)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Perform API Calls\n",
+    "* Perform a weather check on each city using a series of successive API calls.\n",
+    "* Include a print log of each city as it'sbeing processed (with the city number and city name).\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "api_key = \"c68ce3784c7869960c8805a8aea60f7a\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Starting URL for Weather Map API Call\n",
+    "url = \"http://api.openweathermap.org/data/2.5/weather?units=Imperial&APPID=\" + api_key"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Defining a list for city data\n",
+    "city_data = []"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Printting to logger\n",
+    "print(\"Beginning Data Retrieval     \")\n",
+    "print(\"-----------------------------\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Creating counters\n",
+    "record_count = 1\n",
+    "set_count = 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Looping through the cities in the list\n",
+    "for i, city in enumerate(cities):\n",
+    "\n",
+    "    # Grouping cities in sets of 50 \n",
+    "    \n",
+    "    if (i % 50 == 0 and i >= 50):\n",
+    "        set_count += 1\n",
+    "        record_count = 0\n",
+    "        \n",
+    "\n",
+    "    # Creating an endpoint URL \n",
+    "    city_url = url + \"&q=\" + urllib.request.pathname2url(city)\n",
+    "\n",
+    "    \n",
+    "    \n",
+    "    # Logging the url, record, and setting  numbers\n",
+    "    print(\"Processing Record %s of Set %s | %s\" % (record_count, set_count, city))\n",
+    "\n",
+    "    \n",
+    "    \n",
+    "    # Adding  1 to the record count\n",
+    "    record_count = record_count + 1\n",
+    "    \n",
+    "    \n",
+    " # Running an API request for each city\n",
+    "    try:\n",
+    "        # Parsing the JSON and retrieving data\n",
+    "        city_weather = requests.get(city_url).json()\n",
+    "\n",
+    "        # Parseing out the max temp, humidity, and cloudiness\n",
+    "        city_lat = city_weather[\"coord\"][\"lat\"]\n",
+    "        city_lng = city_weather[\"coord\"][\"lon\"]\n",
+    "        city_max_temp = city_weather[\"main\"][\"temp_max\"]\n",
+    "        city_humidity = city_weather[\"main\"][\"humidity\"]\n",
+    "        city_clouds = city_weather[\"clouds\"][\"all\"]\n",
+    "        city_wind = city_weather[\"wind\"][\"speed\"]\n",
+    "        city_country = city_weather[\"sys\"][\"country\"]\n",
+    "        city_date = city_weather[\"dt\"]\n",
+    "\n",
+    "        # Appending the City information into city_data list\n",
+    "        city_data.append({\"City\": city,\n",
+    "                          \"Lat\": city_lat,\n",
+    "                          \"Lng\": city_lng,\n",
+    "                          \"Max Temp\": city_max_temp,\n",
+    "                          \"Humidity\": city_humidity,\n",
+    "                          \"Cloudiness\": city_clouds,\n",
+    "                          \"Wind Speed\": city_wind,\n",
+    "                          \"Country\": city_country,\n",
+    "                          \"Date\": city_date})\n",
+    "\n",
+    "    # If an error is experienced...\n",
+    "    except:\n",
+    "        print(\"City not found. Skipping...\")\n",
+    "        pass\n",
+    "\n",
+    "# Indicating that Data Loading is complete\n",
+    "print(\"-----------------------------\")\n",
+    "print(\"Data Retrieval Complete      \")\n",
+    "print(\"-----------------------------\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Convert Raw Data to DataFrame\n",
+    "* Export the city data into a .csv.\n",
+    "* Display the DataFrame"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Converting a JSONs array into a Pandas DataFrame\n",
+    "city_data_pd = pd.DataFrame(city_data)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Extracting relevant fields from the data frame\n",
+    "lats = city_data_pd[\"Lat\"]\n",
+    "max_temps = city_data_pd[\"Max Temp\"]\n",
+    "humidity = city_data_pd[\"Humidity\"]\n",
+    "cloudiness = city_data_pd[\"Cloudiness\"]\n",
+    "wind_speed = city_data_pd[\"Wind Speed\"]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Exporting City_Data DF into a csv\n",
+    "city_data_pd.to_csv(output_data_file, index_label=\"City_ID\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Showing Record Count\n",
+    "city_data_pd.count()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Displaying City DF\n",
+    "city_data_pd.head(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Plotting the Data\n",
+    "* Use proper labeling of the plots using plot titles (including date of analysis) and axes labels.\n",
+    "* Save the plotted figures as .pngs."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Latitude vs. Temperature Plot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Plot for Latitude vs Temperature\n",
+    "plt.scatter(lats, max_temps, edgecolor=\"red\", linewidths=1, marker=\"v\", alpha=0.8, label=\"Cities\")\n",
+    "\n",
+    "plt.title(\"Latitude vs. Temperature (%s)\" % time.strftime(\"%x\"))\n",
+    "plt.ylabel(\"Max Temperature (F)\")\n",
+    "plt.xlabel(\"Latitude\")\n",
+    "plt.grid(True)\n",
+    "\n",
+    "# Saving the figure\n",
+    "plt.savefig(\"output_data/Latitude_vs_Temperature.png\")\n",
+    "\n",
+    "# Showing the plot\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Latitude vs. Humidity Plot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plot for latitude vs. humidity \n",
+    "plt.scatter(lats,humidity, edgecolor=\"red\", linewidths=1, marker=\"v\", alpha=0.8, label=\"Cities\")\n",
+    "\n",
+    "plt.title(\"Latitude vs. Humidity (%s)\" % time.strftime(\"%x\"))\n",
+    "plt.ylabel(\"Humidity (%)\")\n",
+    "plt.xlabel(\"Latitude\")\n",
+    "plt.grid(True)\n",
+    "\n",
+    "# Saving the figure\n",
+    "plt.savefig(\"output_data/Latitude_vs_Humidity.png\")\n",
+    "\n",
+    "# Showing the plot\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Latitude vs. Cloudiness Plot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plots for latitude vs. cloudiness \n",
+    "plt.scatter(lats, cloudiness, edgecolor=\"red\", linewidths=1, marker=\"v\", alpha=0.8, label=\"Cities\")\n",
+    "\n",
+    "plt.title(\"Latitude vs. Cloudiness (%s)\" % time.strftime(\"%x\"))\n",
+    "plt.ylabel(\"Cloudiness (%)\")\n",
+    "plt.xlabel(\"Latitude\")\n",
+    "plt.grid(True)\n",
+    "\n",
+    "# Saving the figure\n",
+    "plt.savefig(\"output_data/Latitude_vs_Cloudiness.png\")\n",
+    "\n",
+    "# Showing the plot\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Latitude vs. Wind Speed Plot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plots for latitude vs. wind speed plot\n",
+    "plt.scatter(lats,wind_speed, edgecolor=\"red\", linewidths=1, marker=\"v\",alpha=0.8, label=\"Cities\")\n",
+    "\n",
+    "plt.title(\"Latitude vs. Wind Speed (%s)\" % time.strftime(\"%x\"))\n",
+    "plt.ylabel(\"Wind Speed (mph)\")\n",
+    "plt.xlabel(\"Latitude\")\n",
+    "plt.grid(True)\n",
+    "\n",
+    "# Saving the figure\n",
+    "plt.savefig(\"output_data/Latitude_vs_Wind.png\")\n",
+    "\n",
+    "# Showing the plot\n",
+    "plt.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "anaconda-cloud": {},
+  "kernel_info": {
+   "name": "python3"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  },
+  "nteract": {
+   "version": "0.12.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
